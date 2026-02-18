@@ -1,27 +1,42 @@
-provider "aws" {
-  region = "us-east-1"
+# 1. Create a KMS Key for Secret Encryption
+resource "aws_kms_key" "eks" {
+  description             = "EKS Secret Encryption Key"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true # Compliance requirement
 }
 
-# The Private VPC
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.0"
+# 2. Define the EKS Cluster
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 19.0"
 
-  name = "banking-vpc"
-  cidr = "10.0.0.0/16"
+  cluster_name    = "banking-cluster-prod"
+  cluster_version = "1.29"
 
-  azs             = ["us-east-1a", "us-east-1b"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24"] # EKS Nodes live here (No Public IP)
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24"] # Load Balancer lives here
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets # Nodes stay private
 
-  enable_nat_gateway = true
-  single_nat_gateway = true
-
-  public_subnet_tags = {
-    "kubernetes.io/role/elb" = 1
+  # Zero Trust: Enable encryption for K8s Secrets
+  create_kms_key = false
+  cluster_encryption_config = {
+    resources        = ["secrets"]
+    provider_key_arn = aws_kms_key.eks.arn
   }
 
-  private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = 1
+  eks_managed_node_groups = {
+    secure_nodes = {
+      min_size     = 1
+      max_size     = 3
+      desired_size = 2
+
+      instance_types = ["t3.medium"]
+      capacity_type  = "ON_DEMAND"
+      
+      # Ensure nodes are only in private subnets
+      subnet_ids = module.vpc.private_subnets
+    }
   }
+
+  # Enable OIDC for IRSA (IAM Roles for Service Accounts)
+  enable_irsa = true
 }
