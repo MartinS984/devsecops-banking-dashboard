@@ -1,0 +1,33 @@
+name: DevSecOps-CI-Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy FS Scan (SCA)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'table'
+          exit-code: '1' # This fails the build if vulnerabilities are found
+          severity: 'HIGH,CRITICAL'
+
+      - name: Run Trivy K8s Misconfig Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          hide-progress: false
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+          template: '@/contrib/sarif.tpl'
+          output: 'trivy-results.sarif'
