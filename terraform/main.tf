@@ -39,4 +39,11 @@ module "eks" {
 
   # Enable OIDC for IRSA (IAM Roles for Service Accounts)
   enable_irsa = true
+
+  # Secure the endpoint - restricting to a non-routable IP as a placeholder
+  cluster_endpoint_public_access       = true
+  cluster_endpoint_public_access_cidrs = ["1.1.1.1/32"] 
+  
+  # Enable control plane logging (Compliance requirement)
+  cluster_enabled_log_types = ["api", "audit", "authenticator"]
 }
