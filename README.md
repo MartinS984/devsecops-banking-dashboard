@@ -20,5 +20,27 @@ A high-security, compliance-ready banking infrastructure demo. This project foll
 3. **Deploy App:** `kubectl apply -f k8s/base/`
 
 
+
+## 🛠 Local Deployment & Security Validation
+
+### 1. Initialize Zero Trust Environment
+Spin up the secure local cluster in Minikube:
+\`\`\`bash
+minikube start --addons=ingress
+kubectl apply -f k8s/base/namespace.yaml
+kubectl apply -f k8s/policies/network-policy-deny-all.yaml
+\`\`\`
+
+### 2. Deploy the Hardened App
+Deploy the 3-tier banking dashboard:
+\`\`\`bash
+kubectl apply -f k8s/base/backend.yaml
+kubectl apply -f k8s/base/frontend.yaml
+kubectl apply -f k8s/policies/allow-backend-to-db.yaml
+\`\`\`
+
+### 3. Verify Isolation
+Test the 'Deny-All' policy. Only traffic explicitly whitelisted by a `NetworkPolicy` should pass through the cluster.
+
 ---
 *Maintained by [MartinS984](https://github.com/MartinS984)*
