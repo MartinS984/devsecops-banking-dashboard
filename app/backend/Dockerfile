@@ -17,6 +17,7 @@ USER 65532
 
 EXPOSE 3000
 
+# Simple healthcheck for K8s monitoring
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "fetch('http://localhost:3000/api/health').then(r => r.ok ? process.exit(0) : process.exit(1))"
 
