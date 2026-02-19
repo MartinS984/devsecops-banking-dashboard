@@ -16,7 +16,7 @@ module "eks" {
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets # Nodes stay private
 
-  # Zero Trust: Enable encryption for K8s Secrets
+  # Zero Trust: Enable encryption for K8s Secrets at Rest
   create_kms_key = false
   cluster_encryption_config = {
     resources        = ["secrets"]
@@ -44,6 +44,6 @@ module "eks" {
   cluster_endpoint_public_access       = true
   cluster_endpoint_public_access_cidrs = ["1.1.1.1/32"] 
   
-  # Enable control plane logging (Compliance requirement)
-  cluster_enabled_log_types = ["api", "audit", "authenticator"]
+  # Enable full control plane logging (Compliance requirement)
+  cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 }

@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
 
+# Grant the workflow permission to write to the Security Tab
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   security-scan:
     name: Security Scanning (Trivy)
@@ -14,17 +19,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. SCA: Scan dependencies and filesystem for known vulnerabilities
+      # SCA: Scan for vulnerabilities in dependencies
       - name: Run Trivy FS Scan (SCA)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           ignore-unfixed: true
           format: 'table'
-          exit-code: '1' # Fails the build if vulnerabilities are found
+          exit-code: '1' 
           severity: 'HIGH,CRITICAL'
 
-      # 2. IaC: Scan Terraform and Kubernetes manifests for misconfigurations
+      # IaC: Scan Terraform/K8s for misconfigurations
       - name: Run Trivy Config Scan (IaC)
         uses: aquasecurity/trivy-action@master
         with:
@@ -34,23 +39,21 @@ jobs:
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
 
-      # 3. Report: Upload results to the GitHub Security Tab
+      # Upload results to GitHub Security Dashboard
       - name: Upload Trivy scan results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
-        if: always() # Upload results even if the previous steps failed
+        if: always() # Upload even if the scan failed
         with:
           sarif_file: 'trivy-results.sarif'
 
   sonarcloud:
     name: SonarCloud Analysis (SAST)
     runs-on: ubuntu-latest
-    needs: security-scan # Optional: Only runs if basic security scans pass
+    needs: security-scan
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Required for better SonarCloud analysis relevancy
-          
+          fetch-depth: 0
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
