@@ -46,4 +46,7 @@ module "eks" {
   
   # Enable full control plane logging (Compliance requirement)
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+
+  cluster_endpoint_public_access  = false # Best practice for banks
+  cluster_endpoint_private_access = true
 }
