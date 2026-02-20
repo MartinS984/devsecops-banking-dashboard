@@ -42,5 +42,11 @@ kubectl apply -f k8s/policies/allow-backend-to-db.yaml
 ### 3. Verify Isolation
 Test the 'Deny-All' policy. Only traffic explicitly whitelisted by a `NetworkPolicy` should pass through the cluster.
 
+## 🧪 Local Validation Summary
+To bypass Windows/WSL2 port conflicts (svchost PID 5320):
+- **Direct Frontend Access**: \`kubectl port-forward svc/frontend-service 9000:80 -n banking-app\`
+- **URL**: [http://localhost:9000](http://localhost:9000)
+- **Status**: Verified Zero-Trust NetworkPolicies and Distroless Backend.
+
 ---
 *Maintained by [MartinS984](https://github.com/MartinS984)*
