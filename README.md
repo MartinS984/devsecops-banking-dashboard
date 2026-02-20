@@ -48,5 +48,10 @@ To bypass Windows/WSL2 port conflicts (svchost PID 5320):
 - **URL**: [http://localhost:9000](http://localhost:9000)
 - **Status**: Verified Zero-Trust NetworkPolicies and Distroless Backend.
 
+### 🧹 Environment Cleanup
+To remove local networking workarounds:
+- **Port Proxy**: \`netsh interface portproxy delete v4tov4 listenaddress=127.0.0.1 listenport=9000\`
+- **Hosts**: Remove \`banking.local\` mapping from \`C:\\Windows\\System32\\drivers\\etc\\hosts\`.
+
 ---
 *Maintained by [MartinS984](https://github.com/MartinS984)*
